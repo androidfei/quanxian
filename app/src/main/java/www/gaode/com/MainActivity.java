@@ -174,7 +174,17 @@ public class MainActivity extends AppCompatActivity {
                     fileout = new FileOutputStream(imagefile);
                     bitmap.compress(Bitmap.CompressFormat.JPEG, 80, fileout);
 
-                    action_image.setImageDrawable(Drawable.createFromPath(imagefile.getAbsolutePath()));
+                    File temp_file = new File(getExternalCacheDir() + "/tmp.jpg");
+                    if (temp_file.exists()) {
+                        temp_file.delete();
+                    }
+                    try {
+                        temp_file.createNewFile();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    PicUtile.createCompressBitmap(imagefile.getAbsolutePath(), temp_file);
+                    action_image.setImageDrawable(Drawable.createFromPath(temp_file.getAbsolutePath()));
                     fileout.flush();
                     fileout.close();
                 } catch (FileNotFoundException e) {
@@ -244,7 +254,7 @@ public class MainActivity extends AppCompatActivity {
         action_image.setImageDrawable(Drawable.createFromPath(imagePath));
     }
 
-    
+
     public String getImagePath(Uri uri, String selection) {
         String path = null;
         Cursor cusor = getContentResolver().query(uri, null, selection, null, null);
