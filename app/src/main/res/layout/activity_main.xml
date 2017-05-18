@@ -7,8 +7,9 @@
     tools:context="www.gaode.com.MainActivity">
 
     <LinearLayout
+        android:id="@+id/line1"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="50dp">
 
         <Button
             android:id="@+id/take_pic"
@@ -32,4 +33,10 @@
             tools:layout_editor_absoluteX="0dp"
             tools:layout_editor_absoluteY="0dp" />
     </LinearLayout>
+
+    <ImageView
+        android:id="@+id/action_image"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@+id/line1" />
 </RelativeLayout>

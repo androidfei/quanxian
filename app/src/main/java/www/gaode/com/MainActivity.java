@@ -5,6 +5,9 @@ import android.annotation.TargetApi;
 import android.content.ContentUris;
 import android.content.Intent;
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
 import android.provider.DocumentsContract;
@@ -18,13 +21,16 @@ import android.support.v7.widget.ViewUtils;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 
 import org.xutils.view.annotation.Event;
 import org.xutils.view.annotation.ViewInject;
 import org.xutils.x;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.security.Permission;
 import java.util.ArrayList;
@@ -41,6 +47,12 @@ public class MainActivity extends AppCompatActivity {
     @ViewInject(R.id.choice_pic)
     private Button choice_pic;
     private Uri image_uri;
+    @ViewInject(R.id.action_image)
+    private ImageView action_image;
+    private FileOutputStream fileout;
+
+    private static final int TACK_PHONTO = 1;
+    private static final int SELETE_PHONTO = 2;
 
     @Event(type = View.OnClickListener.class, value = R.id.choice_pic)
     private void clickChoicePic(View v) {
@@ -62,7 +74,7 @@ public class MainActivity extends AppCompatActivity {
                     public void onFinish() {
                         Intent in = new Intent(Intent.ACTION_GET_CONTENT);
                         in.setType("image/*");
-                        startActivityForResult(in, 2);
+                        startActivityForResult(in, SELETE_PHONTO);
                     }
 
                     @Override
@@ -97,7 +109,6 @@ public class MainActivity extends AppCompatActivity {
                     public void onFinish() {
                         Log.e(TAG, "onFinish: ");
                         File outputpic = new File(getExternalCacheDir(), "out_img.jpg");
-
                         try {
                             if (outputpic.exists()) {
                                 outputpic.delete();
@@ -113,7 +124,7 @@ public class MainActivity extends AppCompatActivity {
                         }
                         Intent in = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
                         in.putExtra(MediaStore.EXTRA_OUTPUT, image_uri);
-                        startActivityForResult(in, 1);
+                        startActivityForResult(in, TACK_PHONTO);
                     }
 
                     @Override
@@ -141,15 +152,51 @@ public class MainActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
         switch (requestCode) {
             //这是相机
-            case 1:
+            case TACK_PHONTO:
+                Bitmap bitmap = null;
                 try {
-                    MediaStore.Images.Media.insertImage(getContentResolver(), image_uri.getPath(), System.currentTimeMillis() + "aa.jpg", null);//图片插入到系统图库
+                    bitmap = BitmapFactory.decodeStream(getContentResolver().openInputStream(image_uri));
+                    Log.e(TAG, "onActivityResult: " + image_uri.getPath() + " " + bitmap.getByteCount());
+
                 } catch (FileNotFoundException e) {
                     e.printStackTrace();
                 }
-                sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, image_uri));//通知图库刷新
+                File imagefile = new File(getExternalCacheDir() + "/takeph.jpg");
+                if (imagefile.exists()) {
+                    imagefile.delete();
+                }
+                try {
+                    imagefile.createNewFile();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                try {
+                    fileout = new FileOutputStream(imagefile);
+                    bitmap.compress(Bitmap.CompressFormat.JPEG, 80, fileout);
+
+                    action_image.setImageDrawable(Drawable.createFromPath(imagefile.getAbsolutePath()));
+                    fileout.flush();
+                    fileout.close();
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                //插入手机相册有问题
+//                try {
+//                    MediaStore.Images.Media.insertImage(getContentResolver(), imagefile.getPath(), imagefile.getName(), null);//图片插入到系统图库
+//                } catch (FileNotFoundException e) {
+//                    e.printStackTrace();
+//                }
+//                sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, image_uri));//通知图库刷新
+
+
+                //如果要进行压缩则用picutile,
+//                PicUtile.createCompressBitmap(image_uri.getPath(), imagefile);
+
+
                 break;
-            case 2:
+            case SELETE_PHONTO:
                 if (data != null) {
                     if (Build.VERSION.SDK_INT >= 19) {
                         handleimagekit(data);
@@ -159,6 +206,8 @@ public class MainActivity extends AppCompatActivity {
                 }
 
                 break;
+            default:
+                return;
         }
     }
 
@@ -186,13 +235,16 @@ public class MainActivity extends AppCompatActivity {
             //如果是file则通过getpath直接获取
             imagePath = uri.getPath();
         }
+        action_image.setImageDrawable(Drawable.createFromPath(imagePath));
     }
 
     public void handleimage(Intent data) {
         Uri uri = data.getData();
         String imagePath = getImagePath(uri, null);
+        action_image.setImageDrawable(Drawable.createFromPath(imagePath));
     }
 
+    
     public String getImagePath(Uri uri, String selection) {
         String path = null;
         Cursor cusor = getContentResolver().query(uri, null, selection, null, null);
@@ -204,4 +256,5 @@ public class MainActivity extends AppCompatActivity {
         }
         return path;
     }
+
 }
