@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <!--<com.live_test.www.TestView-->
+    <!--android:id="@+id/text"-->
+    <!--android:layout_width="match_parent"-->
+    <!--android:layout_height="match_parent" />-->
+    <android.support.v7.widget.Toolbar
+        style="@style/Base.Theme.AppCompat.Light.DarkActionBar"
+        android:layout_width="match_parent"
+        android:layout_height="300dp"
+        android:background="#1122ff"
+        android:contentInsetLeft="0dp"
+        android:contentInsetStart="0dp"
+        android:popupTheme="@style/ThemeOverlay.AppCompat"
+        app:contentInsetLeft="0dp"
+        app:contentInsetStart="0dp"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true">
+
+
+        <TextView
+
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            android:text="这是textview"
+            android:textColor="#ffffff" />
+
+    </android.support.v7.widget.Toolbar>
+</RelativeLayout>
